@@ -323,7 +323,11 @@ def EXP3_apply_rec_alg(nws, lr_factor, epsilon, gamma):
   return nrs, rrs
 
 
-def EXP3_setup(num, nws_file, gam_file, gammas, lr_factor, epsilon, s_size, load_func, save_func):
+def EXP3_setup(
+    num: int, nws_file: str, gam_file: str, 
+    gammas: list, lr_factor: float, epsilon: float, 
+    s_size: int, load_func: function, save_func: function
+    ) -> tuple[any, any]:
   q_nws = input("Do you have a file with networks? (y/n) ")
   if q_nws == "n":
     nws = EXP3_create_nws(num)
@@ -332,7 +336,7 @@ def EXP3_setup(num, nws_file, gam_file, gammas, lr_factor, epsilon, s_size, load
     nws = load_func(nws_file)
   else:
     print("Try again!")
-    return
+    return None, None
   print("Networks saved!")
 
   q_gam = input("Do you have a file with the gamma check? (y/n) ")
@@ -343,7 +347,7 @@ def EXP3_setup(num, nws_file, gam_file, gammas, lr_factor, epsilon, s_size, load
     min_gam = load_func(gam_file)
   else:
     print("Try again!")
-    return
+    return None, None
   print("Gamma information saved!")
 
   print("Ready to continue!")
