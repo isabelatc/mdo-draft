@@ -1,6 +1,8 @@
 from md_network import *
+from config import *
 from itertools import product
 import matplotlib as mpl
+from matplotlib.lines import Line2D
 import matplotlib.pyplot as plt
 import numpy as np
 import pickle
@@ -106,7 +108,7 @@ def show_step_details(nw: MDNetwork, now: int, next: int):
 # ===== Plot Helpers =====
 
 def set_labels(
-    ax: mpl.axes.Axes, title: str, xlabel: str, ylabel: str, 
+    ax: mpl.Axes, title: str, xlabel: str, ylabel: str, 
     titlesize: int=11, xsize: int=11, ysize: int=11):
   """
   Add formatted labels to a plot.
@@ -134,6 +136,38 @@ def customize_bp(bp: dict, whisker: dict={}, box: dict={}, cap: dict={}, median:
   for i, v in items:
     for x in bp[i]:
       x.set(**v)
+
+
+def make_fig(
+    nrows: int=1, ncols: int=1, 
+    width: float=6.5, height: float=3, 
+    pads: bool=False
+    ) -> tuple[mpl.Figure, mpl.Axes]:
+  """
+  Creates a figure with specific parameters.
+  """
+  f, axs = plt.subplots(nrows, ncols, figsize=(width, height), constrained_layout=True)
+  if pads:
+    f.set_constrained_layout_pads(w_pad=0.1, h_pad=0.1)
+  return f, axs
+
+
+def common_legend(f: mpl.Figure, handles: any=None, ncol: int=2):
+  """
+  Adds a shared legend for multiple subplots in one figure.
+  """
+  kwargs = dict(
+    fontsize=10, loc="upper center", bbox_to_anchor=(0.52, 0),
+    ncol=ncol, alignment="left", borderpad=0.6
+    )
+  f.legend(handles=handles, **kwargs) if handles else f.legend(**kwargs)
+
+def conds_handles(extra: list=[]) -> list:
+  """
+  Creates legend handles for non-regularized and regularized cases (EXP3).
+  """
+  handles = [Line2D([0], [0], color=COLORS_2[c], label=COND_LABELS[c]) for c in COND_LABELS]
+  return handles + extra
 
 
 # ===== Checkpoint Helpers =====
