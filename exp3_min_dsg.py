@@ -322,12 +322,8 @@ def EXP3_apply_rec_alg(nws, lr_factor, epsilon, gamma):
   # Return lists
   return nrs, rrs
 
-def EXP3_setup():
-  print("!")
-  return
 
-
-def EXP3_setupEX(num, nws_file, gam_file, gammas, lr_factor, epsilon, s_size, load_func, save_func):
+def EXP3_setup(num, nws_file, gam_file, gammas, lr_factor, epsilon, s_size, load_func, save_func):
   q_nws = input("Do you have a file with networks? (y/n) ")
   if q_nws == "n":
     nws = EXP3_create_nws(num)
