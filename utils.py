@@ -1,11 +1,7 @@
 from md_network import *
 from config import *
 from itertools import product
-import matplotlib as mpl
-from matplotlib.lines import Line2D
-import matplotlib.pyplot as plt
 import numpy as np
-import pickle
 import scipy.sparse as sp
 
 # ===== Network Helper =====
@@ -103,102 +99,6 @@ def show_step_details(nw: MDNetwork, now: int, next: int):
     mult = [f"({w:.2f} x {se(o)}{o:.2f})" for w, o in m_terms]
     s_i_a = nw.s[a * n + i]
     print(f"z_{i + 1}[{a + 1}] = {deg_term:.3f} x [(1 x {se(s_i_a)}{s_i_a}) + {" + ".join(mult)}] = {se(next_op)}{next_op:.2f}")
-
-
-# ===== Plot Helpers =====
-
-def set_labels(
-    ax: mpl.Axes, title: str, xlabel: str, ylabel: str, 
-    titlesize: int=11, xsize: int=11, ysize: int=11):
-  """
-  Add formatted labels to a plot.
-  """
-  ax.set_title(title, fontdict={"fontsize":titlesize})
-  ax.set_xlabel(xlabel, fontdict={"fontsize":xsize})
-  ax.set_ylabel(ylabel, fontdict={"fontsize":ysize})
-
-
-def save_and_show(plt: plt, filename: str, suptitle: str=None):
-  """
-  Saves a plot into a file and shows it with certain parameters.
-  """
-  if suptitle:
-    plt.suptitle(suptitle, fontsize=12)
-  plt.savefig(filename, bbox_inches="tight", pad_inches=0.05)
-  plt.show()
-
-
-def customize_bp(bp: dict, whisker: dict={}, box: dict={}, cap: dict={}, median: dict={}):
-  """
-  Personalizes a boxplot.
-  """
-  items = [("whiskers", whisker), ("boxes", box), ("caps", cap), ("medians", median)]
-  for i, v in items:
-    for x in bp[i]:
-      x.set(**v)
-
-
-def make_fig(
-    nrows: int=1, ncols: int=1, 
-    width: float=6.5, height: float=3, 
-    pads: bool=False
-    ) -> tuple[mpl.Figure, mpl.Axes]:
-  """
-  Creates a figure with specific parameters.
-  """
-  f, axs = plt.subplots(nrows, ncols, figsize=(width, height), constrained_layout=True)
-  if pads:
-    f.set_constrained_layout_pads(w_pad=0.1, h_pad=0.1)
-  return f, axs
-
-
-def common_legend(f: mpl.Figure, handles: any=None, ncol: int=2):
-  """
-  Adds a shared legend for multiple subplots in one figure.
-  """
-  kwargs = dict(
-    fontsize=10, loc="upper center", bbox_to_anchor=(0.52, 0),
-    ncol=ncol, alignment="left", borderpad=0.6
-    )
-  f.legend(handles=handles, **kwargs) if handles else f.legend(**kwargs)
-
-def conds_handles(extra: list=[]) -> list:
-  """
-  Creates legend handles for non-regularized and regularized cases (EXP3).
-  """
-  handles = [Line2D([0], [0], color=COLORS_2[c], label=COND_LABELS[c]) for c in COND_LABELS]
-  return handles + extra
-
-
-# ===== Checkpoint Helpers =====
-
-def save_pkl(var: any, filename: str):
-  """
-  Saves a variable into a Pickle file.
-  """
-  with open(filename, "wb") as f:
-    pickle.dump(var, f)
-
-
-def load_pkl(filename: str) -> any:
-  """
-  Loads a variable from a Pickle file.
-  """
-  with open(filename, "rb") as f:
-    return pickle.load(f)
-
-
-def add_progress(msg: str, log_file: str="progress.log", end: any=None):
-  """
-  Logs a progress message to a file, and also prints it. If <end> is not None, it must
-  print adding "\r" to the start to the message so it overwrites itself.
-  """
-  with open(log_file, "a") as f:
-    f.write(msg + "\n")
-  if end is None:
-    print(msg)
-  else:
-    print("\r" + msg, end="", flush=True)
 
 
 # ===== Data Modifiers (EXP3) =====
