@@ -326,7 +326,7 @@ def EXP3_apply_rec_alg(nws, lr_factor, epsilon, gamma):
 def EXP3_setup(
     num: int, nws_file: str, gam_file: str, 
     gammas: list, lr_factor: float, epsilon: float, 
-    s_size: int, load_func: function, save_func: function
+    s_size: int, load_func: callable, save_func: callable
     ) -> tuple[any, any]:
   q_nws = input("Do you have a file with networks? (y/n) ")
   if q_nws == "n":
