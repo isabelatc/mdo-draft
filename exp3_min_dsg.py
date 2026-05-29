@@ -5,23 +5,13 @@ import numpy as np
 import random
 import scipy.sparse as sp
 
-# ===== Setup =====
+# ===== Helper Functions =====
 
-# Random Networks Generation
-
-def EXP3_create_nws(num, p_in=[0.09, 0.3], p_out=[0.001, 0.08], max_n=400, max_m=5):
+def EXP3_create_nws(
+    num: int, p_in: list=[0.09, 0.3], p_out: list=[0.001, 0.08], 
+    max_n: int=400, max_m: int=5) -> list:
   """
   Creates <num> random networks and saves them into a list.
-
-  Args:
-    num (int): The amount of networks to create.
-    p_in (list(float)): Range of the in-community edge probabilities.
-    p_out (list(float)): Range of the outer-community edge probabilities.
-    max_n (int): Maximum amount of nodes.
-    max_m (int): Maximum amount of topics.
-
-  Returns:
-    list(MDNetwork): A list with the generated networks.
   """
   nws = []
   for _ in range(num):
@@ -35,33 +25,18 @@ def EXP3_create_nws(num, p_in=[0.09, 0.3], p_out=[0.001, 0.08], max_n=400, max_m
     nw = MDNetwork(sizes=sizes, probs=probs, means=means, std=std, m=m)
     nws.append(nw)
 
-  # Save list to Pickle file and download it
- # if os.path.exists(filename):
-  #  os.remove(filename)
-  #save_pkl(nws, filename)
-  #files.download(filename)
-  #add_progress(f"Networks created, saved and downloaded! (file: {filename})")
-
   # Return the list
   return nws
 
 
-# Calculation of Gradient
-def EXP3_gradient_A(nw, z_eq, reg=False, gamma=0.0):
+def EXP3_gradient_A(
+    nw: MDNetwork, z_eq: np.ndarray, reg: bool=False, gamma: float=0.0
+    ) -> float:
   """
   Calculates the gradient of the global disagreement at equilibrium on the given network, over A.
   The formula is the following: grad_A(Dz*) = diag(grad_L(Dz*)) * 1^T - grad_L(Dz*),
   where grad_L(Dz*) = (1 / m) * (2 * z_eq * (K * z_eq)^T - z_eq * z_eq^T), and K = (L + I)^(-1).
   If reg is True, a regularization term is added to the disagreement function.
-
-  Args:
-    nw (MDNetwork): The network to work on.
-    z_eq (ndarray): The equilibrium opinions vector.
-    reg (bool): Indicates if the regularization term is added or not.
-    gamma (float): Parameter that controls the strength of the regularization.
-
-  Returns:
-    float: The gradient of the disagreement over A.
   """
   m = nw.m
   n = sum(nw.sizes)
@@ -78,8 +53,6 @@ def EXP3_gradient_A(nw, z_eq, reg=False, gamma=0.0):
   return grad_A
 
 
-# Projection onto Constraints
-
 def EXP3_enforce_symmetry(A_proj: np.ndarray, n: int, m: int) -> np.ndarray:
   """
   Modifies the matrix A_proj to enforce symmetry by blocks and in general.
@@ -94,19 +67,11 @@ def EXP3_enforce_symmetry(A_proj: np.ndarray, n: int, m: int) -> np.ndarray:
   return A_proj
 
 
-def EXP3_project_A(nw, A_proj, A_init, epsilon, deg_tol=1e-2):
+def EXP3_project_A(
+    nw: MDNetwork, A_proj: np.ndarray, A_init: np.ndarray, 
+    epsilon: float, deg_tol: float=1e-2) -> np.ndarray:
   """
   Modifies the given A_proj to fit the constraints of the model (starting from A_init).
-
-  Args:
-    nw (MDNetwork): The network to work on.
-    A_proj (ndarray): The matrix obtained from the minimization process.
-    A_init (ndarray): The original modified adjacency matrix.
-    epsilon (float): Constraint parameter representing how much weights can change.
-    deg_tol (float): Constraint parameter representing the maximum change of nodes' degrees.
-
-  Returns:
-    ndarray: The projected A matrix (A_proj modified).
   """
   m = nw.m
   n = sum(nw.sizes)
@@ -152,7 +117,7 @@ def EXP3_project_A(nw, A_proj, A_init, epsilon, deg_tol=1e-2):
   return A_proj
 
 
-# ===== Main Function =====
+# ===== Main Functions =====
 
 def EXP3_min_disagreement(nw, lr_factor, epsilon, max_iters=100, tol=1e-3, reg=False, gamma=0.0, show=True):
   """
@@ -171,8 +136,10 @@ def EXP3_min_disagreement(nw, lr_factor, epsilon, max_iters=100, tol=1e-3, reg=F
 
   Returns:
     dict: A dictionary containing per-topic metrics for each iteration.
+    csr_matrix: The first A of the network.
     csr_matrix: The last calculated A.
   """
+  A_init_csr = nw.A
   A_init = nw.A.toarray()
 
   labels = ["P", "D", "I", "D_st", "D_ct"]
@@ -239,27 +206,46 @@ def EXP3_min_disagreement(nw, lr_factor, epsilon, max_iters=100, tol=1e-3, reg=F
     print(f"Maximum iterations reached! Network didn't converge.")
 
   # Reset network with original matrices
-  nw.update_MDN(sp.csr_matrix(A_init))
-  return data, A_csr
+  nw.update_MDN(A_init_csr)
+  return data, A_init_csr, A_csr
+
+
+def EXP3_apply_rec_alg(
+    nws: list, lr_factor: float, epsilon: float, gamma: float
+    ) -> tuple[list, list, list, list]:
+  """
+  Applies the recommendation algorithm on the given networks.
+  """
+  # Create variables to save results in
+  nrs   = []
+  rrs   = []
+  nrs_A = []
+  rrs_A = []
+
+  for i, nw in enumerate(nws):
+    print(f"Processing Network {i + 1}/{len(nws)}...")
+    nr, nr_A_i, nr_A_f = EXP3_min_disagreement(nw, lr_factor, epsilon, show=False)
+    print(f"> Non-Regularized Process: Done!")
+    rr, rr_A_i, rr_A_f = EXP3_min_disagreement(nw, lr_factor, epsilon, reg=True, gamma=gamma, show=False)
+    print(f"> Regularized Process: Done!")
+    nrs.append(nr), rrs.append(rr)
+    nrs_A.append(nr_A_i, nr_A_f)
+    rrs_A.append(rr_A_i, rr_A_f)
+
+  print(f"Minimization processes done!")
+
+  # Return lists
+  return nrs, rrs, nrs_A, rrs_A
 
 
 # ===== Gamma Sensitivity Check =====
 
-def EXP3_gamma_check(nws, gammas, lr_factor, epsilon, s_size):
+def EXP3_gamma_check(
+    nws: list, gammas: list, lr_factor: float, epsilon: float, s_size: int
+    ) -> list:
   """
   It generates a sample of networks, optimizes them for each possible gamma
   value, saving the disagreement results for each case.
-
-  Args:
-    nws (list(MDNetwork)): The list with all of the networks.
-    gammas (list(float)): The list with all possible gammas.
-    lr_factor (float): A fixed learning rate factor.
-    epsilon (float): A fixed epsilon.
-    s_size (int): The sample size.
-
-  Returns:
-    list(list(float)): A list containing the minimization ratio for
-                       disagreement, for each network and gamma.
   """
   # Obtain sample and save it
   gam_nws = random.sample(nws, s_size)
@@ -272,56 +258,19 @@ def EXP3_gamma_check(nws, gammas, lr_factor, epsilon, s_size):
     res_gam = []
     for gam in gammas:
       print(f"[$\\gamma$ = {gam}]")
-      rr = EXP3_min_disagreement(nw, lr_factor, epsilon, reg=True, gamma=gam, show=False)
+      rr, _, _ = EXP3_min_disagreement(nw, lr_factor, epsilon, reg=True, gamma=gam, show=False)
       D = rr["D"]
       d_i, d_f = np.mean(D[0]), np.mean(D[-1])
       res_gam.append(d_f / d_i)
     res_nws.append(res_gam)
 
-  # Save list to Pickle file and download it
-  #if os.path.exists(filename):
-   # os.remove(filename)
-  #save_pkl(res_nws, filename)
-  #files.download(filename)
   print(f"Sample optimization complete!")
 
   # Return the list
   return res_nws
 
 
-# ===== Apply Recommendation Algorithm =====
-def EXP3_apply_rec_alg(nws, lr_factor, epsilon, gamma):
-  """
-  Applies the recommendation algorithm on the given networks.
-
-  Args:
-    nws (list(MDNetwork)): The full list of networks.
-    lr_factor (float): A fixed learning rate factor.
-    epsilon (float): A fixed epsilon parameter.
-    gamma (float): A fixed gamma parameter.
-  """
-  # Create variables to save results in
-  nrs = []
-  rrs  = []
-
-  for i, nw in enumerate(nws):
-    print(f"Processing Network {i + 1}/{len(nws)}...")
-    nr = EXP3_min_disagreement(nw, lr_factor, epsilon, show=False)
-    print(f"> Non-Regularized Process: Done!")
-    rr = EXP3_min_disagreement(nw, lr_factor, epsilon, reg=True, gamma=gamma, show=False)
-    print(f"> Regularized Process: Done!")
-    nrs.append(nr), rrs.append(rr)
-
-  # Save lists to Pickle files and download them
-  #if os.path.exists(nrs_file): os.remove(nrs_file)
-  #if os.path.exists(rs_file):  os.remove(rs_file)
-  #save_pkl(nrs, nrs_file), save_pkl(rs, rs_file)
-  #files.download(nrs_file), files.download(rs_file)
-  print(f"Minimization processes done!")
-
-  # Return lists
-  return nrs, rrs
-
+# ===== Setup for Experiment =====
 
 def EXP3_setup(
     num: int, nws_file: str, gam_file: str, 
