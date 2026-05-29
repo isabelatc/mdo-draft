@@ -146,7 +146,7 @@ def EXP3_create_nwr(
     show: bool=True, 
     bots_file: str="REDDIT_data/blacklist_anon.joblib", 
     data_file: str="REDDIT_data/edges_anon.csv"
-    ) -> list:
+    ) -> dict:
   """
   Builds the full network from the reddit dataset, for different levels of
   added cross-topic influence.
@@ -178,7 +178,7 @@ def EXP3_create_nwr(
   # Add variation to A
   nw_alphas = {}
 
-  print("\nNetwork data by alpha:\n")
+  print("Network data by alpha:\n")
   for alpha in alphas:
     A_cross = alpha * A_pre
     A_full = sp.block_array(
@@ -187,7 +187,7 @@ def EXP3_create_nwr(
       )
 
     # Check weights limits
-    print(f"alpha={alpha} —> Max. Weight = {A_full.max():.3f}")
+    print(f"alpha = {alpha} —> Max. Weight = {A_full.max():.3f}")
 
     # Construct network
     nwr = MDNetwork()
@@ -202,11 +202,11 @@ def EXP3_create_nwr(
     Dz_terms = nwr.get_Dz_terms(z=z_eq)
 
     print(
-      f"=> P={np.mean(metrics[0]):.3f},",
-      f"D={np.mean(metrics[1]):.3f},",
-      f"I={np.mean(metrics[2]):.3f},",
-      f"D_st={np.mean(Dz_terms[0]):.3f},",
-      f"D_ct={np.mean(Dz_terms[1]):.3f}\n"
+      f"=> P = {np.mean(metrics[0]):.2f},",
+      f"D = {np.mean(metrics[1]):.2f},",
+      f"I = {np.mean(metrics[2]):.2f},",
+      f"D_st = {np.mean(Dz_terms[0]):.2f},",
+      f"D_ct = {np.mean(Dz_terms[1]):.2f}\n"
       )
 
     nw_alphas[alpha] = nwr
