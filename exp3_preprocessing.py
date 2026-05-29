@@ -5,7 +5,7 @@ import pandas as pd
 import scipy.sparse as sp
 from md_network import *
 
-def process_reddit_data(
+def EXP3_process_reddit_data(
     show: bool=True, 
     bots_file: str="REDDIT_data/blacklist_anon.joblib", 
     data_file: str="REDDIT_data/edges_anon.csv"
@@ -139,7 +139,7 @@ def process_reddit_data(
 
 # ===== Create Full Network =====
 
-def create_nwr(
+def EXP3_create_nwr(
     alphas: list,
     show: bool=True, 
     bots_file: str="REDDIT_data/blacklist_anon.joblib", 
@@ -147,7 +147,7 @@ def create_nwr(
     ) -> list:
   
   # Obtain graph
-  ops, G_final = process_reddit_data(show=show, bots_file=bots_file, data_file=data_file)
+  ops, G_final = EXP3_process_reddit_data(show=show, bots_file=bots_file, data_file=data_file)
 
   # Get nodes
   nodes = sorted(G_final.nodes())
