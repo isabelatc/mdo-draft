@@ -210,7 +210,7 @@ def EXP3_min_disagreement(nw, lr_factor, epsilon, max_iters=100, tol=1e-3, reg=F
 
 def EXP3_apply_rec_alg(
     nws: list, lr_factor: float, epsilon: float, gamma: float
-    ) -> tuple[list, list, list, list]:
+    ) -> tuple[list, list]:
   """
   Applies the recommendation algorithm on the given networks.
   """
