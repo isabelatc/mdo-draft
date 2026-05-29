@@ -136,10 +136,8 @@ def EXP3_min_disagreement(nw, lr_factor, epsilon, max_iters=100, tol=1e-3, reg=F
 
   Returns:
     dict: A dictionary containing per-topic metrics for each iteration.
-    csr_matrix: The first A of the network.
-    csr_matrix: The last calculated A.
+
   """
-  A_init_csr = nw.A
   A_init = nw.A.toarray()
 
   labels = ["P", "D", "I", "D_st", "D_ct"]
@@ -206,8 +204,8 @@ def EXP3_min_disagreement(nw, lr_factor, epsilon, max_iters=100, tol=1e-3, reg=F
     print(f"Maximum iterations reached! Network didn't converge.")
 
   # Reset network with original matrices
-  nw.update_MDN(A_init_csr)
-  return data, A_init_csr, A_csr
+  nw.update_MDN(sp.csr_matrix(A_init))
+  return data
 
 
 def EXP3_apply_rec_alg(
@@ -219,23 +217,19 @@ def EXP3_apply_rec_alg(
   # Create variables to save results in
   nrs   = []
   rrs   = []
-  nrs_A = []
-  rrs_A = []
 
   for i, nw in enumerate(nws):
     print(f"Processing Network {i + 1}/{len(nws)}...")
-    nr, nr_A_i, nr_A_f = EXP3_min_disagreement(nw, lr_factor, epsilon, show=False)
+    nr = EXP3_min_disagreement(nw, lr_factor, epsilon, show=False)
     print(f"> Non-Regularized Process: Done!")
-    rr, rr_A_i, rr_A_f = EXP3_min_disagreement(nw, lr_factor, epsilon, reg=True, gamma=gamma, show=False)
+    rr = EXP3_min_disagreement(nw, lr_factor, epsilon, reg=True, gamma=gamma, show=False)
     print(f"> Regularized Process: Done!")
     nrs.append(nr), rrs.append(rr)
-    nrs_A.append(nr_A_i, nr_A_f)
-    rrs_A.append(rr_A_i, rr_A_f)
-
+    
   print(f"Minimization processes done!")
 
   # Return lists
-  return nrs, rrs, nrs_A, rrs_A
+  return nrs, rrs
 
 
 # ===== Gamma Sensitivity Check =====
@@ -258,7 +252,7 @@ def EXP3_gamma_check(
     res_gam = []
     for gam in gammas:
       print(f"[$\\gamma$ = {gam}]")
-      rr, _, _ = EXP3_min_disagreement(nw, lr_factor, epsilon, reg=True, gamma=gam, show=False)
+      rr = EXP3_min_disagreement(nw, lr_factor, epsilon, reg=True, gamma=gam, show=False)
       D = rr["D"]
       d_i, d_f = np.mean(D[0]), np.mean(D[-1])
       res_gam.append(d_f / d_i)
