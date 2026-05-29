@@ -1,5 +1,4 @@
 from md_network import *
-from config import *
 from itertools import product
 import numpy as np
 import scipy.sparse as sp
@@ -106,7 +105,6 @@ def show_step_details(nw: MDNetwork, now: int, next: int):
 def data_by_key(
     data: dict, 
     avg: bool=False,
-    order: str="m_c",
     conds: list=["NR", "RR"],
     metrics: list=["P", "D", "I", "D_st", "D_ct"]
     ) -> dict:
@@ -115,20 +113,15 @@ def data_by_key(
   """
   nws_m = [nw["m"] for nw in data[conds[0]]]
   max_m = max(nws_m)
+  final = {met: {con: [] for con in conds} for met in metrics}
 
-  outer_keys = metrics if order == "m_c" else conds
-  inner_keys = metrics if order == "c_m" else conds
-  final = {ok: {ik: [] for ik in inner_keys} for ok in outer_keys}
-
-  for ok in outer_keys:
-    for ik in inner_keys:
-      met = ok if order == "m_c" else ik
-      con = ok if order == "c_m" else ik
+  for met in metrics:
+    for con in conds:
       if avg:
         for nw in data[con]:
           iters = len(nw[met])
           iter_data = [np.mean(nw[met][i]) for i in range(iters)]
-          final[ok][ik].append(iter_data)
+          final[met][con].append(iter_data)
       else:
         for a in range(max_m):
           a_list = []
@@ -139,12 +132,12 @@ def data_by_key(
             else:
               a_data = []
             a_list.append(a_data)
-          final[ok][ik].append(a_list)
+          final[met][con].append(a_list)
 
   return final
 
 
-def EXP3_get_delta(data: dict) -> list:
+def get_delta(data: dict) -> list:
   """
   Given metric data, obtains the difference in percentage between the first and last 
   measurements, for each network.
