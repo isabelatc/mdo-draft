@@ -181,6 +181,7 @@ def EXP3_create_nwr(
       )
 
     # Check weights limits
+    print("\nNetwork data by alpha:\n")
     print(f"alpha={alpha} —> Max. Weight = {A_full.max():.3f}")
 
     # Construct network
