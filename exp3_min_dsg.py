@@ -267,7 +267,7 @@ def EXP3_gamma_check(
 # ===== Setup for Experiment =====
 
 def EXP3_setup(
-    num: int, nws_file: str, gam_file: str, 
+    num: int, nws_file: str, gam_file: str, pre_load: str,
     gammas: list, lr_factor: float, epsilon: float, 
     s_size: int, load_func: callable, save_func: callable
     ) -> tuple[any, any]:
@@ -276,7 +276,7 @@ def EXP3_setup(
     nws = EXP3_create_nws(num)
     save_func(nws, nws_file)
   elif q_nws == "y":
-    nws = load_func(nws_file)
+    nws = load_func(pre_load + nws_file)
   else:
     print("Try again!")
     return None, None
@@ -287,7 +287,7 @@ def EXP3_setup(
     min_gam = EXP3_gamma_check(nws, gammas, lr_factor, epsilon, s_size)
     save_func(min_gam, gam_file)
   elif q_gam == "y":
-    min_gam = load_func(gam_file)
+    min_gam = load_func(pre_load + gam_file)
   else:
     print("Try again!")
     return None, None
