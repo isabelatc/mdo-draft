@@ -10,7 +10,9 @@ def EXP3_process_reddit_data(
     bots_file: str="REDDIT_data/blacklist_anon.joblib", 
     data_file: str="REDDIT_data/edges_anon.csv"
     ) -> tuple[pd.DataFrame, nx.classes.graph.Graph]:
-
+  """
+  Does all the processing to the Reddit dataset and returns its initial opinions and graph.
+  """
   if show:
     print("\n===========================================================\n")
 
@@ -145,7 +147,10 @@ def EXP3_create_nwr(
     bots_file: str="REDDIT_data/blacklist_anon.joblib", 
     data_file: str="REDDIT_data/edges_anon.csv"
     ) -> list:
-  
+  """
+  Builds the full network from the reddit dataset, for different levels of
+  added cross-topic influence.
+  """
   # Obtain graph
   ops, G_final = EXP3_process_reddit_data(show=show, bots_file=bots_file, data_file=data_file)
 
