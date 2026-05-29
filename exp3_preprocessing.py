@@ -173,6 +173,7 @@ def EXP3_create_nwr(
   # Add variation to A
   nw_alphas = {}
 
+  print("\nNetwork data by alpha:\n")
   for alpha in alphas:
     A_cross = alpha * A_pre
     A_full = sp.block_array(
@@ -181,7 +182,6 @@ def EXP3_create_nwr(
       )
 
     # Check weights limits
-    print("\nNetwork data by alpha:\n")
     print(f"alpha={alpha} —> Max. Weight = {A_full.max():.3f}")
 
     # Construct network
