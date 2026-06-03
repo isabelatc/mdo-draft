@@ -74,7 +74,6 @@ def EXP2_generate_means(c, t, low, high, eps=0.1, max_iters=10):
 
     if t == 0:
       if c == 1: dc1 = dc2 = dc
-      else: dc = rng.choice([dc1, dc2])
       s1 = s2
     else:
       dt = rng.uniform(*high)
@@ -143,7 +142,7 @@ def EXP2_initial_conditions(
   data = {metric: np.empty((4, 3, networks), dtype=float) for metric in dict_labels}
   index = 0
 
-  # Iterate through the 16 total cases, with <networks> networks each
+  # Iterate through the 12 total cases, with <networks> networks each
   for mu, k, c, t in product(range(2), range(2), range(2), range(2)):
     if t == 1:
       if c == 0: continue
