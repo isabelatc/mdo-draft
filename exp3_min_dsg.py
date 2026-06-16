@@ -264,34 +264,6 @@ def EXP3_gamma_check(
   return res_nws
 
 
-# ===== Epsilon Sensitivity Check =====
-
-def EXP3_epsilon_check(
-    nw: list, epsilons: list, lr_factor: float, gamma: float, s_size: int
-    ) -> list:
-  """
-  It generates a sample of networks, optimizes them for each possible epsilon
-  value, saving the disagreement results for each case.
-  """
-  eps_nr = []
-  eps_rr = []
-  for eps in epsilons:
-    nr = EXP3_min_disagreement(nw, lr_factor, eps, show=False)
-    D = nr["D"]
-    d_i, d_f = np.mean(D[0]), np.mean(D[-1])
-    eps_nr.append(d_f / d_i)
-
-    rr = EXP3_min_disagreement(nw, lr_factor, eps, reg=True, gamma=gamma, show=False)
-    D = rr["D"]
-    d_i, d_f = np.mean(D[0]), np.mean(D[-1])
-    eps_rr.append(d_f / d_i)
-
-  print(f"Epsilon optimization complete!")
-
-  # Return the list
-  return eps_nr, eps_rr
-
-
 # ===== Setup for Experiment =====
 
 def EXP3_setup(
