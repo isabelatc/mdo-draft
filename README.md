@@ -12,6 +12,7 @@ Code for the investigation regarding my Master's thesis in Computer Science at U
 - `exp3_min_dsg.py` - Experiment 3: Recommendation algorithm
 - `exp3_preprocessing.py` - Creation of a network from Reddit data
 - `utils.py` - Helper functions
+- `REDDIT_data/` - Original data from Reddit 
 
 ## Resources
 
